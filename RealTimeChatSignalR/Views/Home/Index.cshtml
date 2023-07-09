@@ -1,0 +1,59 @@
+﻿@{
+    ViewData["Title"] = "Chat";
+}
+
+<h1> RealTime Chat With SignalR </h1>
+<hr />
+
+
+<div class="container">
+
+    <div>
+        <label>User Name: </label>
+        <input type="text" id="displayname" />
+    </div>
+
+    <div class="mt-5">
+        <input type="text" id="message" />
+        <input type="button" id="sendmessage" value="Send" />
+    </div>
+
+    <div class="mt-3">
+        <ul id="discussion"> </ul>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@7.0.7/dist/browser/signalr.min.js"></script>
+
+<script>
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/chat")
+        .build();
+
+        connection.start().catch(function(err){
+            return console.error(err.toString());
+        });
+
+
+    document.getElementById("sendmessage").addEventListener("click", function (event) {
+        const user = document.getElementById("displayname").value;  
+        const message = document.getElementById("message").value;
+
+        connection.invoke("SendMessage", user, message)
+            .catch(function (err) {
+                return console.error(err.toString());
+            }); 
+
+        event.preventDefault();         
+    });
+
+    connection.on("ReceiveMessage", function (user, message) {
+
+        encodedMsg = user + " : " + message;
+        var li = document.createElement("li");
+
+        li.textContent=encodedMsg;
+        document.getElementById("discussion").appendChild(li);
+    });
+</script>
